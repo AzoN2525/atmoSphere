@@ -1,0 +1,28 @@
+# Dependencies (rebuilt inside Docker)
+node_modules/
+
+# Build output (rebuilt inside Docker)
+dist/
+
+# Environment files (VITE_* are passed as build args, never bake a .env)
+.env
+.env.*
+.env.local
+.env.*.local
+
+# Editor & OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.log
+
+# Git
+.git/
+.gitignore
+
+# TanStack generated cache
+.tanstack/
+
+# Test / storybook
+coverage/

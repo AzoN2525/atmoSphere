@@ -1,0 +1,648 @@
+{
+  "info": {
+    "_postman_id": "atmosphere-api-collection",
+    "name": "AtmoSphere API",
+    "description": "Colecção completa dos endpoints da API AtmoSphere para demonstração end-to-end da arquitectura.\n\n**Fluxo de demonstração:**\n1. Listar áreas\n2. Ver snapshot actual (dados em tempo real via RabbitMQ)\n3. Forçar refresh do snapshot\n4. Consultar histórico (dados persistidos no TimescaleDB)\n5. Gerir alertas e thresholds\n6. Avaliação family-friendly\n7. KPIs de sustentabilidade\n\n**Base URL:** http://localhost:8080\n**Documentação interactiva:** http://localhost:8080/swagger-ui.html",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "areaId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "alertId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Áreas",
+      "description": "Gestão das áreas geográficas da cidade.",
+      "item": [
+        {
+          "name": "Listar todas as áreas",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas"]
+            },
+            "description": "Retorna a lista completa de todas as áreas geográficas monitorizadas pela plataforma."
+          },
+          "response": []
+        },
+        {
+          "name": "Obter área por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/{{areaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "{{areaId}}"]
+            },
+            "description": "Retorna os detalhes de uma área específica. Usa a variável {{areaId}} (default: 1)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Snapshots (Tempo Real)",
+      "description": "Dados ambientais em tempo real agregados por área. Estes dados são produzidos pelos agentes via RabbitMQ e armazenados em cache.",
+      "item": [
+        {
+          "name": "Snapshot de todas as áreas",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/snapshots",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "snapshots"]
+            },
+            "description": "Retorna o snapshot actual (ar, ruído, tráfego) de todas as áreas."
+          },
+          "response": []
+        },
+        {
+          "name": "Snapshot de uma área",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/snapshots/{{areaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "snapshots", "{{areaId}}"]
+            },
+            "description": "Retorna o snapshot completo de uma área: qualidade do ar (AQI), ruído (Leq dB) e tráfego (veículos/km)."
+          },
+          "response": []
+        },
+        {
+          "name": "Forçar refresh do snapshot",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/snapshots/{{areaId}}/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "snapshots", "{{areaId}}", "refresh"]
+            },
+            "description": "Força a actualização imediata do snapshot de uma área a partir dos dados mais recentes. Demonstra que os agentes escrevem dados continuamente via RabbitMQ."
+          },
+          "response": []
+        },
+        {
+          "name": "Qualidade do ar (snapshot)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/snapshots/{{areaId}}/air-quality",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "snapshots", "{{areaId}}", "air-quality"]
+            },
+            "description": "Retorna apenas os dados mais recentes de qualidade do ar (AQI) de uma área."
+          },
+          "response": []
+        },
+        {
+          "name": "Ruído (snapshot)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/snapshots/{{areaId}}/noise",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "snapshots", "{{areaId}}", "noise"]
+            },
+            "description": "Retorna apenas os dados mais recentes de ruído (Leq em dB) de uma área."
+          },
+          "response": []
+        },
+        {
+          "name": "Tráfego (snapshot)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/snapshots/{{areaId}}/traffic",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "snapshots", "{{areaId}}", "traffic"]
+            },
+            "description": "Retorna apenas os dados mais recentes de tráfego (veículos/km) de uma área."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Histórico (TimescaleDB)",
+      "description": "Dados históricos ambientais persistidos no TimescaleDB. Suporta filtragem por intervalo de datas e agregação HOURLY ou DAILY.",
+      "item": [
+        {
+          "name": "Histórico combinado (7 dias, horário)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/{{areaId}}/history?aggregation=HOURLY",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "{{areaId}}", "history"],
+              "query": [
+                {
+                  "key": "aggregation",
+                  "value": "HOURLY",
+                  "description": "Agregação: HOURLY ou DAILY"
+                },
+                {
+                  "key": "from",
+                  "value": "2025-04-15T00:00:00",
+                  "description": "Data inicial (ISO 8601) — opcional, default: últimos 7 dias",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "2025-04-22T23:59:59",
+                  "description": "Data final (ISO 8601) — opcional, default: agora",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retorna dados históricos combinados de AQI, Leq (ruído) e veículos/km, consolidados por timestamp. Padrão: últimos 7 dias com agregação horária."
+          },
+          "response": []
+        },
+        {
+          "name": "Histórico combinado (diário)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/{{areaId}}/history?aggregation=DAILY",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "{{areaId}}", "history"],
+              "query": [
+                {
+                  "key": "aggregation",
+                  "value": "DAILY",
+                  "description": "Agregação diária"
+                }
+              ]
+            },
+            "description": "Mesmo que o anterior mas com agregação diária — útil para ver tendências de longo prazo."
+          },
+          "response": []
+        },
+        {
+          "name": "Histórico qualidade do ar",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/{{areaId}}/history/air-quality?aggregation=HOURLY",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "{{areaId}}", "history", "air-quality"],
+              "query": [
+                {
+                  "key": "aggregation",
+                  "value": "HOURLY"
+                },
+                {
+                  "key": "from",
+                  "value": "2025-04-15T00:00:00",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "2025-04-22T23:59:59",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retorna o histórico de AQI (Air Quality Index) de uma área."
+          },
+          "response": []
+        },
+        {
+          "name": "Histórico ruído",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/{{areaId}}/history/noise?aggregation=HOURLY",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "{{areaId}}", "history", "noise"],
+              "query": [
+                {
+                  "key": "aggregation",
+                  "value": "HOURLY"
+                },
+                {
+                  "key": "from",
+                  "value": "2025-04-15T00:00:00",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "2025-04-22T23:59:59",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retorna o histórico de Leq (nível de ruído equivalente, em dB) de uma área."
+          },
+          "response": []
+        },
+        {
+          "name": "Histórico tráfego",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/{{areaId}}/history/traffic?aggregation=HOURLY",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "{{areaId}}", "history", "traffic"],
+              "query": [
+                {
+                  "key": "aggregation",
+                  "value": "HOURLY"
+                },
+                {
+                  "key": "from",
+                  "value": "2025-04-15T00:00:00",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "2025-04-22T23:59:59",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retorna o histórico de densidade de tráfego (veículos/km) de uma área."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. Alertas",
+      "description": "Gestão de alertas ambientais e configuração de thresholds. Alertas são gerados automaticamente quando os valores dos sensores ultrapassam os limites configurados.",
+      "item": [
+        {
+          "name": "Listar alertas (últimos 7 dias)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "alerts"]
+            },
+            "description": "Lista todos os alertas dos últimos 7 dias (padrão). Pode filtrar por areaId, indicatorType (AIR_QUALITY, NOISE, TRAFFIC) e intervalo de datas."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar alertas com filtros",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alerts?areaId={{areaId}}&indicatorType=AIR_QUALITY",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "alerts"],
+              "query": [
+                {
+                  "key": "areaId",
+                  "value": "{{areaId}}",
+                  "description": "Filtrar por área"
+                },
+                {
+                  "key": "indicatorType",
+                  "value": "AIR_QUALITY",
+                  "description": "AIR_QUALITY, NOISE ou TRAFFIC"
+                },
+                {
+                  "key": "from",
+                  "value": "2025-04-01T00:00:00",
+                  "description": "Data inicial (ISO 8601)",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "2025-04-22T23:59:59",
+                  "description": "Data final (ISO 8601)",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Lista alertas filtrados por área e tipo de indicador. Demonstra a capacidade de filtragem da API."
+          },
+          "response": []
+        },
+        {
+          "name": "Obter alerta por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alerts/{{alertId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "alerts", "{{alertId}}"]
+            },
+            "description": "Retorna os detalhes completos de um alerta específico."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar todos os thresholds",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alerts/thresholds",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "alerts", "thresholds"]
+            },
+            "description": "Lista todos os limites de alerta configurados para todas as áreas e tipos de indicador."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar thresholds de uma área",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alerts/thresholds/area/{{areaId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "alerts", "thresholds", "area", "{{areaId}}"]
+            },
+            "description": "Lista os thresholds configurados para uma área específica."
+          },
+          "response": []
+        },
+        {
+          "name": "Criar/Actualizar threshold — Qualidade do Ar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"areaId\": 1,\n  \"indicatorType\": \"AIR_QUALITY\",\n  \"thresholdValue\": 100.0\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alerts/thresholds",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "alerts", "thresholds"]
+            },
+            "description": "Cria ou actualiza o threshold de AQI para uma área. Se já existir, substitui o valor. indicatorType: AIR_QUALITY, NOISE ou TRAFFIC."
+          },
+          "response": []
+        },
+        {
+          "name": "Criar/Actualizar threshold — Ruído",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"areaId\": 1,\n  \"indicatorType\": \"NOISE\",\n  \"thresholdValue\": 65.0\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alerts/thresholds",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "alerts", "thresholds"]
+            },
+            "description": "Define o threshold de ruído (Leq dB) para uma área. Valor típico urbano: 65 dB."
+          },
+          "response": []
+        },
+        {
+          "name": "Criar/Actualizar threshold — Tráfego",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"areaId\": 1,\n  \"indicatorType\": \"TRAFFIC\",\n  \"thresholdValue\": 500.0\n}",
+              "options": {
+                "raw": { "language": "json" }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alerts/thresholds",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "alerts", "thresholds"]
+            },
+            "description": "Define o threshold de densidade de tráfego (veículos/km) para uma área."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. Avaliação Family-Friendly",
+      "description": "Classificação das áreas quanto à qualidade de vida para famílias, com base nos dados históricos de ar, ruído e tráfego.",
+      "item": [
+        {
+          "name": "Avaliação de uma área (6 meses)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/{{areaId}}/family-assessment?aggregation=MONTHLY",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "{{areaId}}", "family-assessment"],
+              "query": [
+                {
+                  "key": "aggregation",
+                  "value": "MONTHLY",
+                  "description": "MONTHLY, DAILY ou HOURLY"
+                },
+                {
+                  "key": "from",
+                  "value": "2024-10-01T00:00:00",
+                  "description": "Data inicial — opcional, default: últimos 6 meses",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "2025-04-22T23:59:59",
+                  "description": "Data final — opcional, default: agora",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Calcula a classificação family-friendly de uma área com base nos dados históricos. Agrega por mês (padrão), dia ou hora."
+          },
+          "response": []
+        },
+        {
+          "name": "Avaliação de todas as áreas",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/areas/family-assessment?aggregation=MONTHLY",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "areas", "family-assessment"],
+              "query": [
+                {
+                  "key": "aggregation",
+                  "value": "MONTHLY"
+                }
+              ]
+            },
+            "description": "Calcula e compara a classificação family-friendly de todas as áreas. Permite identificar quais as melhores zonas da cidade."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. KPIs de Sustentabilidade",
+      "description": "Indicadores chave de performance (KPIs) de sustentabilidade ambiental. Calculam médias de qualidade do ar, ruído e tráfego por área, e identificam hotspots de tráfego. Padrão: últimas 24 horas.",
+      "item": [
+        {
+          "name": "KPIs (últimas 24 horas)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/kpis",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "kpis"]
+            },
+            "description": "Retorna todos os KPIs de sustentabilidade para as últimas 24 horas (padrão). Inclui:\n- averageAirQualityByArea: AQI médio por área\n- averageTrafficDensityByArea: densidade média de tráfego por área\n- averageNoiseLevelByArea: Leq médio por área\n- hotspotsDetected: áreas com tráfego acima do limiar de hotspot"
+          },
+          "response": []
+        },
+        {
+          "name": "KPIs com intervalo personalizado",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/kpis?startDate=2025-04-15T00:00:00&endDate=2025-04-22T23:59:59",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "kpis"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-04-15T00:00:00",
+                  "description": "Data de início (ISO 8601: yyyy-MM-dd'T'HH:mm:ss)"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-04-22T23:59:59",
+                  "description": "Data de fim (ISO 8601: yyyy-MM-dd'T'HH:mm:ss)"
+                }
+              ]
+            },
+            "description": "Retorna KPIs de sustentabilidade para um intervalo de datas específico. Nota: startDate não pode ser posterior a endDate (retorna 400)."
+          },
+          "response": []
+        },
+        {
+          "name": "KPIs — último mês",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/kpis?startDate=2025-03-22T00:00:00&endDate=2025-04-22T23:59:59",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "kpis"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-03-22T00:00:00"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-04-22T23:59:59"
+                }
+              ]
+            },
+            "description": "KPIs dos últimos 30 dias — útil para demonstrar tendências mensais de sustentabilidade."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

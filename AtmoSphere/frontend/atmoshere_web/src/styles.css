@@ -1,0 +1,49 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --color-primary: #006948;
+  --color-primary-container: #00855d;
+  --color-on-primary: #ffffff;
+  --color-secondary: #334155;
+  --color-surface: #f7f9fb;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f4f6;
+  --color-surface-container-highest: #e0e3e5;
+  --color-on-surface: #191c1e;
+  --color-outline: #79747e;
+  --color-outline-variant: #bccac0;
+  --color-background: #f7f9fb;
+}
+
+body {
+  @apply bg-background text-on-surface;
+}
+
+/* Scroll behavior responsivo */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Remover espaçamento padrão de button em diferentes estados */
+button {
+  @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
+}
+
+/* Link padrão */
+a {
+  @apply transition-colors;
+}
+
+.atmosphere-area-popup .mapboxgl-popup-content {
+  padding: 0;
+  border-radius: 0.75rem;
+  background: transparent;
+  box-shadow: none;
+}
+
+.atmosphere-area-popup .mapboxgl-popup-tip {
+  display: none;
+}

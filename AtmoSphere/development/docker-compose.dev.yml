@@ -1,0 +1,135 @@
+services:
+
+    rabbitmq:
+      image: rabbitmq:3.13-management
+      container_name: rabbitmq
+      restart: unless-stopped
+      environment:
+        RABBITMQ_DEFAULT_USER: admin
+        RABBITMQ_DEFAULT_PASS: admin
+        RABBITMQ_DEFAULT_VHOST: /
+      ports:
+        - "5672:5672"
+        - "15672:15672"
+      volumes:
+        - rabbitmq_data:/var/lib/rabbitmq
+      healthcheck:
+        test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+    
+
+    postgres_db:
+        image: timescale/timescaledb:latest-pg16
+        container_name: timescale_db
+        environment:
+          POSTGRES_USER: ${POSTGRES_USER}
+          POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+          POSTGRES_DB: ${POSTGRES_DB}
+        ports:
+          - "5432:5432"
+        volumes:
+          - postgres_data:/var/lib/postgresql/data
+          - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+        healthcheck:
+          test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+
+
+    seed:
+      build:
+        context: ../agents
+        dockerfile: dockerfile
+      working_dir: /app
+      command: >
+        sh -c "[ -f /seed_done/seeded ] || (uv run seed.py && touch /seed_done/seeded)"
+      restart: "no"
+      volumes:
+        - seed_done:/seed_done
+      depends_on:
+        rabbitmq:
+          condition: service_healthy
+
+    air_agent:
+      build:
+        context: ../agents
+        dockerfile: dockerfile
+      working_dir: /app
+      command: ["uv", "run", "AirAgent.py"]
+      depends_on:
+        - rabbitmq
+
+    noise_agent:
+      build:
+        context: ../agents
+        dockerfile: dockerfile
+      working_dir: /app
+      command: ["uv", "run", "NoiseAgent.py"]
+      depends_on:
+        - rabbitmq
+
+    traffic_agent:
+      build:
+        context: ../agents
+        dockerfile: dockerfile
+      working_dir: /app
+      command: ["uv", "run", "TraficAgent.py"]
+      depends_on:
+        - rabbitmq
+
+
+
+    api:
+      build:
+        context: ../backend/api
+        dockerfile: dockerfile.dev
+      working_dir: /app
+      ports:
+        - "8080:8080"
+      volumes:
+        - ../backend/api:/app:cached          # monta o código-fonte
+        - ~/.m2:/root/.m2:cached              # cache do Maven local (opcional mas recomendado)
+      environment:
+        SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_db:5432/${POSTGRES_DB}
+        SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+        SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+        SPRING_RABBITMQ_HOST: rabbitmq
+        SERVER_PORT: ${SERVER_PORT:-8080}
+        SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      depends_on:
+        postgres_db:
+          condition: service_healthy
+        rabbitmq:
+          condition: service_healthy
+    
+    web-dev:
+        build:
+            context: ../frontend/atmoshere_web
+            dockerfile: dockerfile.dev
+        working_dir: /app
+        ports:
+            - "5173:5173"
+        volumes:
+            - ../frontend/atmoshere_web:/app:cached
+            - /app/node_modules
+        environment:
+            NODE_ENV: development
+            VITE_API_URL: ${VITE_API_URL}
+            VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN}
+            VITE_KEYCLOAK_BASE_URL: ${VITE_KEYCLOAK_BASE_URL}
+            VITE_KEYCLOAK_REALM: ${VITE_KEYCLOAK_REALM}
+            VITE_KEYCLOAK_CLIENT_ID: ${VITE_KEYCLOAK_CLIENT_ID}
+        command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+      
+
+
+  
+volumes:
+    postgres_data:
+    rabbitmq_data:
+    maven_cache:
+    api_target:
+    seed_done:

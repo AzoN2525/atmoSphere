@@ -1,0 +1,15 @@
+FROM python:3.12-alpine
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+# Copiar só o ficheiro do projeto para cachear instalação de dependências
+COPY pyproject.toml /app/
+
+# Instalar dependências definidas no pyproject.toml
+RUN uv sync --no-cache
+
+# Copiar o código da app
+COPY . /app

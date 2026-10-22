@@ -1,0 +1,11 @@
+FROM maven:3.9.9-eclipse-temurin-17
+WORKDIR /app
+
+# Copia apenas o pom.xml primeiro para cachear as dependências
+COPY pom.xml .
+RUN mvn dependency:go-offline -q
+
+# O código-fonte será montado via volume no docker-compose
+EXPOSE 8080
+
+ENTRYPOINT ["mvn", "spring-boot:run"]
