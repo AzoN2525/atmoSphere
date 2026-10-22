@@ -1,11 +1,5 @@
 # AtmoSphere
 
-<img width="1024" height="1024" alt="ChatGPT Image Feb 19, 2026, 12_05_53 PM" src="https://github.com/user-attachments/assets/60b1e9f8-d5b3-41c2-8071-45bf5605c7a3" />
-
-Smart City Environmental Intelligence Platform
-
----
-
 ## Project Abstract
 
 AtmoSphere is a multi-layer smart city platform designed to ingest, process, and visualize environmental sensor data, including air quality, traffic density, and noise levels.
